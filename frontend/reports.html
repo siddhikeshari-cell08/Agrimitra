@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Agrimitra | Farmer Soil Report</title>
+
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="dashboard.css">
+
+</head>
+
+
+<body>
+
+
+<header class="navbar">
+
+    <a href="index.html" class="brand">
+        🌱 Agrimitra
+    </a>
+
+
+    <nav>
+
+        <a href="index.html">
+            Home
+        </a>
+
+        <a href="dashboard.html">
+            Dashboard
+        </a>
+
+        <a href="reports.html">
+            Reports
+        </a>
+
+    </nav>
+
+
+    <div class="device-status">
+        <span>●</span> Device Online
+    </div>
+
+</header>
+
+
+
+<main class="dashboard">
+
+
+    <!-- PAGE HEADER -->
+
+    <div class="dashboard-head">
+
+        <div>
+
+            <span class="eyebrow">
+                FARMER SOIL REPORT
+            </span>
+
+            <h1>
+                Your Soil Record
+            </h1>
+
+            <p>
+                A simple summary of the latest
+                monitored conditions.
+            </p>
+
+        </div>
+
+
+        <button
+            class="primary-btn"
+            onclick="window.print()">
+
+            🖨 Print / Save PDF
+
+        </button>
+
+    </div>
+
+
+
+    <!-- REPORT CARD -->
+
+    <section class="report-card">
+
+
+        <!-- REPORT HEADER -->
+
+        <div class="report-header">
+
+            <div>
+
+                <h2>
+                    🌱 AGRIMITRA
+                </h2>
+
+                <p>
+                    Farmer Soil Report
+                </p>
+
+            </div>
+
+
+            <div>
+
+                <span>
+                    REPORT ID
+                </span>
+
+                <strong id="reportId">
+                    AGR-2026-001
+                </strong>
+
+            </div>
+
+        </div>
+
+
+
+        <!-- SUMMARY -->
+
+        <div class="report-summary">
+
+
+            <!-- SOIL HEALTH -->
+
+            <div>
+
+                <span>
+                    SOIL HEALTH SCORE
+                </span>
+
+                <strong
+                    class="report-score"
+                    id="reportScore">
+
+                    --
+
+                    <small>/100</small>
+
+                </strong>
+
+                <b id="reportStatus">
+                    ANALYZING
+                </b>
+
+            </div>
+
+
+
+            <!-- CREDIT POINTS -->
+
+            <div>
+
+                <span>
+                    SOIL CREDIT POINTS
+                </span>
+
+                <strong
+                    class="report-credit"
+                    id="reportCredit">
+
+                    740
+
+                </strong>
+
+                <small>
+                    Monitoring record
+                </small>
+
+            </div>
+
+
+        </div>
+
+
+
+        <!-- LATEST READINGS -->
+
+        <h3>
+            Latest Readings
+        </h3>
+
+
+        <div class="report-table">
+
+
+            <!-- MOISTURE -->
+
+            <div>
+
+                <span>
+                    Soil Moisture
+                </span>
+
+                <b id="reportMoisture">
+                    --
+                </b>
+
+                <em id="moistureStatus">
+                    Reading
+                </em>
+
+            </div>
+
+
+
+            <!-- TEMPERATURE -->
+
+            <div>
+
+                <span>
+                    Temperature
+                </span>
+
+                <b id="reportTemperature">
+                    --
+                </b>
+
+                <em id="temperatureStatus">
+                    Reading
+                </em>
+
+            </div>
+
+
+
+            <!-- HUMIDITY -->
+
+            <div>
+
+                <span>
+                    Humidity
+                </span>
+
+                <b id="reportHumidity">
+                    --
+                </b>
+
+                <em id="humidityStatus">
+                    Reading
+                </em>
+
+            </div>
+
+
+
+            <!-- GAS STRESS -->
+
+            <div>
+
+                <span>
+                    Gas Stress
+                </span>
+
+                <b id="reportGas">
+                    --
+                </b>
+
+                <em id="gasStatus">
+                    Reading
+                </em>
+
+            </div>
+
+
+        </div>
+
+
+
+        <!-- AI RECOMMENDATION -->
+
+        <div class="recommendation">
+
+            <h3>
+                🤖 AI Recommendation
+            </h3>
+
+
+            <p id="aiRecommendation">
+
+                Analyzing the latest soil readings...
+
+            </p>
+
+        </div>
+
+
+
+        <!-- REPORT GENERATED TIME -->
+
+        <div class="report-note">
+
+            <strong>
+                AI Soil Analysis
+            </strong>
+
+            <p id="reportDescription">
+
+                This report is generated from the latest
+                monitored soil readings and the Agrimitra
+                soil-health analysis engine.
+
+            </p>
+
+            <p>
+
+                <strong>Generated:</strong>
+
+                <span id="generatedTime">
+                    --
+                </span>
+
+            </p>
+
+        </div>
+
+
+    </section>
+
+
+</main>
+
+
+
+<footer>
+
+    <p>
+        🌱 Agrimitra • Know Your Soil.
+        Grow Smarter. Earn More.
+    </p>
+
+</footer>
+
+
+
+<script src="data.js"></script>
+<script src="reports.js"></script>
+
+
+</body>
+
+</html>

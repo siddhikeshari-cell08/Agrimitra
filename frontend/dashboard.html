@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>
+        Agrimitra | Soil Dashboard
+    </title>
+
+    <link rel="stylesheet"
+          href="style.css">
+
+    <link rel="stylesheet"
+          href="dashboard.css">
+
+</head>
+
+
+<body>
+
+
+<header class="navbar">
+
+    <a href="index.html"
+       class="brand">
+
+        🌱 Agrimitra
+
+    </a>
+
+
+    <nav>
+
+        <a href="index.html">
+            Home
+        </a>
+
+        <a href="dashboard.html">
+            Dashboard
+        </a>
+
+        <a href="reports.html">
+            Reports
+        </a>
+
+    </nav>
+
+
+    <div class="status-pill">
+
+        ● Device Online
+
+    </div>
+
+</header>
+
+
+
+<main class="dashboard">
+
+
+    <!-- DASHBOARD HEADER -->
+
+    <div class="dashboard-head">
+
+        <div>
+
+            <span class="eyebrow">
+                FARMER DASHBOARD
+            </span>
+
+            <h1>
+                Good evening, Farmer 👋
+            </h1>
+
+            <p>
+                Here is the latest reading
+                from your monitored field.
+            </p>
+
+        </div>
+
+
+        <button
+            class="secondary-btn"
+            id="refreshBtn">
+
+            ↻ Refresh Readings
+
+        </button>
+
+    </div>
+
+
+
+    <!-- SCORE + CREDIT -->
+
+    <section class="dashboard-grid">
+
+
+        <div class="panel">
+
+            <div class="panel-title">
+
+                <span>
+                    SOIL HEALTH SCORE
+                </span>
+
+                <span
+                    class="badge"
+                    id="scoreLabel">
+
+                    HEALTHY
+
+                </span>
+
+            </div>
+
+
+            <div class="big-score">
+
+                <strong id="score">
+                    82
+                </strong>
+
+                <span>
+                    /100
+                </span>
+
+            </div>
+
+
+            <div class="progress">
+
+                <span
+                    id="scoreBar"
+                    style="width:82%">
+
+                </span>
+
+            </div>
+
+
+            <p id="scoreMessage">
+
+                Your monitored soil is currently
+                in a healthy range.
+
+            </p>
+
+        </div>
+
+
+
+        <div class="panel">
+
+            <div class="panel-title">
+
+                <span>
+                    SOIL CREDIT POINTS
+                </span>
+
+                <span>
+                    ⭐
+                </span>
+
+            </div>
+
+
+            <div class="credit-number">
+                740
+            </div>
+
+
+            <p>
+                Built from the farmer's
+                soil monitoring history.
+            </p>
+
+
+            <a href="reports.html"
+               class="text-link">
+
+                View Soil Report →
+
+            </a>
+
+        </div>
+
+    </section>
+
+
+
+    <!-- SENSOR CARDS -->
+
+    <section class="sensor-grid">
+
+
+        <div class="sensor-card">
+
+            <span class="sensor-icon">
+                💧
+            </span>
+
+            <div>
+
+                <span>
+                    SOIL MOISTURE
+                </span>
+
+                <strong id="moisture">
+                    68%
+                </strong>
+
+                <small id="moistureState">
+                    Good range
+                </small>
+
+            </div>
+
+        </div>
+
+
+
+        <div class="sensor-card">
+
+            <span class="sensor-icon">
+                🌡️
+            </span>
+
+            <div>
+
+                <span>
+                    TEMPERATURE
+                </span>
+
+                <strong id="temperature">
+                    27°C
+                </strong>
+
+                <small id="tempState">
+                    Normal
+                </small>
+
+            </div>
+
+        </div>
+
+
+
+        <div class="sensor-card">
+
+            <span class="sensor-icon">
+                💨
+            </span>
+
+            <div>
+
+                <span>
+                    HUMIDITY
+                </span>
+
+                <strong id="humidity">
+                    61%
+                </strong>
+
+                <small>
+                    Moderate
+                </small>
+
+            </div>
+
+        </div>
+
+
+
+        <div class="sensor-card">
+
+            <span class="sensor-icon">
+                🌫️
+            </span>
+
+            <div>
+
+                <span>
+                    GAS STRESS
+                </span>
+
+                <strong id="gas">
+                    Low
+                </strong>
+
+                <small id="gasState">
+                    No warning
+                </small>
+
+            </div>
+
+        </div>
+
+    </section>
+
+
+
+    <!-- LOWER SECTION -->
+
+    <section class="dashboard-grid">
+
+
+        <!-- CHART -->
+
+        <div class="panel">
+
+            <div class="panel-title">
+
+                <span>
+                    MOISTURE TREND
+                </span>
+
+                <span>
+                    Last 7 readings
+                </span>
+
+            </div>
+
+
+            <div
+                class="chart"
+                id="chart">
+
+            </div>
+
+
+            <div class="chart-labels">
+
+                <span>1</span>
+                <span>2</span>
+                <span>3</span>
+                <span>4</span>
+                <span>5</span>
+                <span>6</span>
+                <span>Now</span>
+
+            </div>
+
+        </div>
+
+
+
+        <!-- AI INSIGHT -->
+
+        <div class="panel">
+
+            <div class="panel-title">
+
+                <span>
+                    AI INSIGHT
+                </span>
+
+                <span>
+                    🤖
+                </span>
+
+            </div>
+
+
+            <div class="insight">
+
+                <strong id="insightTitle">
+
+                    Maintain current irrigation
+
+                </strong>
+
+
+                <p id="insightText">
+
+                    Moisture is in a good range.
+                    Continue monitoring before
+                    making the next irrigation decision.
+
+                </p>
+
+            </div>
+
+
+            <a href="reports.html"
+               class="primary-btn">
+
+                Generate Report
+
+            </a>
+
+        </div>
+
+    </section>
+
+</main>
+
+
+
+<footer>
+
+    <p>
+        🌱 Agrimitra • Build for Bharat Hackathon 2026
+        • Team Samarpan
+    </p>
+
+</footer>
+
+<script src="data.js"></script>
+
+<script src="dashboard.js"></script>
+
+</body>
+
+</html>
