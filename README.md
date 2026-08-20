@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # 🌱 Agrimitra
 
 ## AI-Powered Smart Soil Monitoring for Small Farmers
@@ -111,26 +112,78 @@ The prototype can generate new simulated IoT readings for demonstration.
 - VS Code
 - Git
 - GitHub
+=======
+
+# 🌱 Agrimitra
+
+**AI-powered soil health monitoring and farmer decision support platform.**
+
+Agrimitra is a farmer-focused platform designed to monitor soil conditions and provide simple, actionable insights using AI-based soil health analysis.
+
+## 🚧 Project Status
+
+**Currently under development for the hackathon.**
+
+## 🎯 Objective
+
+Agrimitra aims to help farmers understand their soil conditions through easy-to-read sensor data, soil health scores, AI recommendations, and soil reports.
+
+## ✨ Planned Features
+
+- 🌱 Soil health monitoring
+- 💧 Soil moisture monitoring
+- 🌡️ Temperature monitoring
+- 💨 Humidity monitoring
+- 🌫️ Gas stress monitoring
+- 🤖 AI-based soil health score
+- 💡 AI-powered recommendations
+- 📊 Farmer-friendly dashboard
+- 📄 Soil health reports
+- ⭐ Soil credit points
+- 🔄 Real-time/simulated sensor reading refresh
+
+## 🛠️ Technology Stack
+
+- HTML
+- CSS
+- JavaScript
+- Python
+- Flask
+- AI-based soil health analysis
+>>>>>>> d7a6bf2e7bc2d53b46a757d884d1f1e4786d7dc7
 
 ## 📁 Project Structure
 
 ```text
 Agrimitra/
+<<<<<<< HEAD
+=======
+│
+>>>>>>> d7a6bf2e7bc2d53b46a757d884d1f1e4786d7dc7
 ├── frontend/
 │   ├── index.html
 │   ├── dashboard.html
 │   ├── reports.html
+<<<<<<< HEAD
 │   ├── style.css
 │   ├── dashboard.css
 │   ├── dashboard.js
 │   ├── data.js
 │   ├── reports.js
 │   └── script.js
+=======
+│   ├── dashboard.js
+│   ├── reports.js
+│   ├── data.js
+│   ├── style.css
+│   └── dashboard.css
+>>>>>>> d7a6bf2e7bc2d53b46a757d884d1f1e4786d7dc7
 │
 ├── backend/
 │   └── app.py
 │
 ├── ai/
+<<<<<<< HEAD
 │   ├── __init__.py
 │   └── soil_health_score.py
 │
@@ -140,3 +193,8 @@ Agrimitra/
 ├── README.md
 ├── requirements.txt
 └── .gitignore
+=======
+│   └── soil_health_score.py
+│
+└── README.md
+>>>>>>> d7a6bf2e7bc2d53b46a757d884d1f1e4786d7dc7
