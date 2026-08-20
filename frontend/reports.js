@@ -12,7 +12,7 @@ async function loadReport() {
         // ========================================
 
         const response = await fetch(
-            "http://127.0.0.1:5000/api/soil-health",
+        "https://agrimitra-1-ys6e.onrender.com/api/soil-health",
             {
                 method: "POST",
 
