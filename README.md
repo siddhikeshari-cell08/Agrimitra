@@ -1,4 +1,4 @@
-<<<<<<< HEAD
+ HEAD
 # 🌱 Agrimitra
 
 ## AI-Powered Smart Soil Monitoring for Small Farmers
