@@ -64,7 +64,9 @@
 <main class="dashboard">
 
 
-    <!-- DASHBOARD HEADER -->
+    <!-- ========================================
+         DASHBOARD HEADER
+    ========================================= -->
 
     <div class="dashboard-head">
 
@@ -88,7 +90,8 @@
 
         <button
             class="secondary-btn"
-            id="refreshBtn">
+            id="refreshBtn"
+            type="button">
 
             ↻ Refresh Readings
 
@@ -98,10 +101,16 @@
 
 
 
-    <!-- SCORE + CREDIT -->
+    <!-- ========================================
+         SCORE + CREDIT
+    ========================================= -->
 
     <section class="dashboard-grid">
 
+
+        <!-- ====================================
+             SOIL HEALTH SCORE
+        ===================================== -->
 
         <div class="panel">
 
@@ -115,7 +124,7 @@
                     class="badge"
                     id="scoreLabel">
 
-                    HEALTHY
+                    ---
 
                 </span>
 
@@ -125,7 +134,7 @@
             <div class="big-score">
 
                 <strong id="score">
-                    82
+                    --
                 </strong>
 
                 <span>
@@ -139,7 +148,7 @@
 
                 <span
                     id="scoreBar"
-                    style="width:82%">
+                    style="width:0%">
 
                 </span>
 
@@ -148,14 +157,17 @@
 
             <p id="scoreMessage">
 
-                Your monitored soil is currently
-                in a healthy range.
+                Waiting for latest soil reading...
 
             </p>
 
         </div>
 
 
+
+        <!-- ====================================
+             SOIL CREDIT POINTS
+        ===================================== -->
 
         <div class="panel">
 
@@ -172,8 +184,12 @@
             </div>
 
 
-            <div class="credit-number">
+            <div
+                class="credit-number"
+                id="creditPoints">
+
                 740
+
             </div>
 
 
@@ -196,10 +212,18 @@
 
 
 
-    <!-- SENSOR CARDS -->
+    <!-- ========================================
+         SENSOR CARDS
+         
+         HUMIDITY REMOVED
+    ========================================= -->
 
     <section class="sensor-grid">
 
+
+        <!-- ====================================
+             SOIL MOISTURE
+        ===================================== -->
 
         <div class="sensor-card">
 
@@ -214,11 +238,11 @@
                 </span>
 
                 <strong id="moisture">
-                    68%
+                    --
                 </strong>
 
                 <small id="moistureState">
-                    Good range
+                    Waiting for reading
                 </small>
 
             </div>
@@ -226,6 +250,10 @@
         </div>
 
 
+
+        <!-- ====================================
+             TEMPERATURE
+        ===================================== -->
 
         <div class="sensor-card">
 
@@ -240,11 +268,11 @@
                 </span>
 
                 <strong id="temperature">
-                    27°C
+                    --
                 </strong>
 
                 <small id="tempState">
-                    Normal
+                    Waiting for reading
                 </small>
 
             </div>
@@ -253,31 +281,9 @@
 
 
 
-        <div class="sensor-card">
-
-            <span class="sensor-icon">
-                💨
-            </span>
-
-            <div>
-
-                <span>
-                    HUMIDITY
-                </span>
-
-                <strong id="humidity">
-                    61%
-                </strong>
-
-                <small>
-                    Moderate
-                </small>
-
-            </div>
-
-        </div>
-
-
+        <!-- ====================================
+             GAS STRESS
+        ===================================== -->
 
         <div class="sensor-card">
 
@@ -292,27 +298,32 @@
                 </span>
 
                 <strong id="gas">
-                    Low
+                    --
                 </strong>
 
                 <small id="gasState">
-                    No warning
+                    Waiting for reading
                 </small>
 
             </div>
 
         </div>
 
+
     </section>
 
 
 
-    <!-- LOWER SECTION -->
+    <!-- ========================================
+         LOWER SECTION
+    ========================================= -->
 
     <section class="dashboard-grid">
 
 
-        <!-- CHART -->
+        <!-- ====================================
+             MOISTURE TREND
+        ===================================== -->
 
         <div class="panel">
 
@@ -352,7 +363,9 @@
 
 
 
-        <!-- AI INSIGHT -->
+        <!-- ====================================
+             AI INSIGHT
+        ===================================== -->
 
         <div class="panel">
 
@@ -373,16 +386,16 @@
 
                 <strong id="insightTitle">
 
-                    Maintain current irrigation
+                    Waiting for soil analysis...
 
                 </strong>
 
 
                 <p id="insightText">
 
-                    Moisture is in a good range.
-                    Continue monitoring before
-                    making the next irrigation decision.
+                    Refresh the readings to
+                    generate the latest AI
+                    soil health insight.
 
                 </p>
 
@@ -413,9 +426,16 @@
 
 </footer>
 
+
+
+<!-- ========================================
+     JAVASCRIPT
+========================================= -->
+
 <script src="data.js"></script>
 
 <script src="dashboard.js"></script>
+
 
 </body>
 

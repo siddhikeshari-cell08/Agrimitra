@@ -2,17 +2,12 @@
 // AGRIMITRA SENSOR DATA
 // ========================================
 
-// Simulated IoT sensor readings
-// Later these values can come from ESP8266/API.
-
-let soilData = {
+const soilData = {
 
     moisture: 68,
     temperature: 27,
-    humidity: 61,
     gasStress: 22,
 
-    healthScore: 82,
     creditPoints: 740
 
 };
@@ -22,31 +17,54 @@ let soilData = {
 // GENERATE NEW SENSOR READING
 // ========================================
 
-function generateNewReading() {
+function generateReading() {
 
-    // Moisture: 40% - 80%
+    // Moisture: 30 - 85
     soilData.moisture =
-        Math.floor(Math.random() * 41) + 40;
+        Math.floor(
+            Math.random() * 56
+        ) + 30;
 
 
-    // Temperature: 22°C - 35°C
+    // Temperature: 18 - 36
     soilData.temperature =
-        Math.floor(Math.random() * 14) + 22;
-
-
-    // Humidity: 45% - 80%
-    soilData.humidity =
-        Math.floor(Math.random() * 36) + 45;
+        Math.floor(
+            Math.random() * 19
+        ) + 18;
 
 
     // Gas stress: 5 - 70
     soilData.gasStress =
-        Math.floor(Math.random() * 66) + 5;
+        Math.floor(
+            Math.random() * 66
+        ) + 5;
 
 
     console.log(
-        "New Agrimitra Sensor Reading:",
+        "NEW SENSOR READING:",
         soilData
     );
+
+}
+
+
+// ========================================
+// GET CURRENT DATA
+// ========================================
+
+function getSoilData() {
+
+    return {
+
+        moisture:
+            Number(soilData.moisture),
+
+        temperature:
+            Number(soilData.temperature),
+
+        gasStress:
+            Number(soilData.gasStress)
+
+    };
 
 }

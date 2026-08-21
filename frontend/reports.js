@@ -1,76 +1,147 @@
 // ========================================
-// AGRIMITRA REPORT LOGIC
+// AGRIMITRA REPORT
 // ========================================
-
 
 async function loadReport() {
 
+    console.log("Loading Agrimitra Report...");
+
+
+    // ========================================
+    // CHECK SENSOR DATA
+    // ========================================
+
+    if (
+        typeof soilData === "undefined"
+    ) {
+
+        console.error(
+            "soilData is not available"
+        );
+
+        return;
+
+    }
+
+
+    console.log(
+        "Current Sensor Data:",
+        soilData
+    );
+
+
+    // ========================================
+    // SHOW CURRENT READINGS IMMEDIATELY
+    // ========================================
+
+    updateReportReadings(
+
+        soilData.moisture,
+
+        soilData.temperature,
+
+        soilData.gasStress
+
+    );
+
+
     try {
 
-        // ========================================
-        // GET CURRENT SENSOR DATA
-        // ========================================
+        // ====================================
+        // SEND DATA TO LOCAL FLASK BACKEND
+        // ====================================
 
         const response = await fetch(
-        "https://agrimitra-1-ys6e.onrender.com/api/soil-health",
+            "/api/soil-health",
             {
+
                 method: "POST",
 
                 headers: {
-                    "Content-Type": "application/json"
+
+                    "Content-Type":
+                        "application/json"
+
                 },
 
                 body: JSON.stringify({
 
-                    moisture: soilData.moisture,
+                    moisture:
+                        Number(
+                            soilData.moisture
+                        ),
 
-                    temperature: soilData.temperature,
+                    temperature:
+                        Number(
+                            soilData.temperature
+                        ),
 
-                    humidity: soilData.humidity,
-
-                    gas_stress: soilData.gasStress
+                    gas_stress:
+                        Number(
+                            soilData.gasStress
+                        )
 
                 })
+
             }
         );
 
 
-        // ========================================
-        // CHECK RESPONSE
-        // ========================================
+        console.log(
+            "API Response:",
+            response.status
+        );
+
 
         if (!response.ok) {
 
             throw new Error(
-                "Server returned " + response.status
+                "API Error: " +
+                response.status
             );
 
         }
 
 
-        const data = await response.json();
+        const data =
+            await response.json();
 
 
         console.log(
-            "Agrimitra Report Data:",
+            "Agrimitra AI Report:",
             data
         );
 
 
-        // ========================================
-        // GET BACKEND DATA
-        // ========================================
-
-        const soil =
-            data.soil_health;
+        // ====================================
+        // BACKEND DATA
+        // ====================================
 
         const sensor =
             data.sensor_data;
 
+        const soil =
+            data.soil_health;
 
-        // ========================================
-        // SOIL HEALTH SCORE
-        // ========================================
+
+        // ====================================
+        // UPDATE READINGS
+        // ====================================
+
+        updateReportReadings(
+
+            sensor.moisture,
+
+            sensor.temperature,
+
+            sensor.gas_stress
+
+        );
+
+
+        // ====================================
+        // HEALTH SCORE
+        // ====================================
 
         const scoreElement =
             document.getElementById(
@@ -86,9 +157,9 @@ async function loadReport() {
         }
 
 
-        // ========================================
+        // ====================================
         // HEALTH STATUS
-        // ========================================
+        // ====================================
 
         const statusElement =
             document.getElementById(
@@ -99,339 +170,33 @@ async function loadReport() {
         if (statusElement) {
 
             statusElement.textContent =
-                soil.status.toUpperCase();
+                String(
+                    soil.status
+                ).toUpperCase();
 
         }
 
 
-        // ========================================
-        // SOIL MOISTURE
-        // ========================================
-
-        const moistureElement =
-            document.getElementById(
-                "reportMoisture"
-            );
-
-
-        if (moistureElement) {
-
-            moistureElement.textContent =
-                `${sensor.moisture}%`;
-
-        }
-
-
-        // ========================================
-        // MOISTURE STATUS
-        // ========================================
-
-        const moistureStatus =
-            document.getElementById(
-                "moistureStatus"
-            );
-
-
-        if (moistureStatus) {
-
-            if (sensor.moisture < 45) {
-
-                moistureStatus.textContent =
-                    "Low";
-
-            }
-
-            else if (sensor.moisture <= 70) {
-
-                moistureStatus.textContent =
-                    "Good range";
-
-            }
-
-            else {
-
-                moistureStatus.textContent =
-                    "High";
-
-            }
-
-        }
-
-
-        // ========================================
-        // TEMPERATURE
-        // ========================================
-
-        const temperatureElement =
-            document.getElementById(
-                "reportTemperature"
-            );
-
-
-        if (temperatureElement) {
-
-            temperatureElement.textContent =
-                `${sensor.temperature}°C`;
-
-        }
-
-
-        // ========================================
-        // TEMPERATURE STATUS
-        // ========================================
-
-        const temperatureStatus =
-            document.getElementById(
-                "temperatureStatus"
-            );
-
-
-        if (temperatureStatus) {
-
-            if (
-                sensor.temperature >= 22 &&
-                sensor.temperature <= 32
-            ) {
-
-                temperatureStatus.textContent =
-                    "Normal";
-
-            }
-
-            else {
-
-                temperatureStatus.textContent =
-                    "Attention";
-
-            }
-
-        }
-
-
-        // ========================================
-        // HUMIDITY
-        // ========================================
-
-        const humidityElement =
-            document.getElementById(
-                "reportHumidity"
-            );
-
-
-        if (humidityElement) {
-
-            humidityElement.textContent =
-                `${sensor.humidity}%`;
-
-        }
-
-
-        // ========================================
-        // HUMIDITY STATUS
-        // ========================================
-
-        const humidityStatus =
-            document.getElementById(
-                "humidityStatus"
-            );
-
-
-        if (humidityStatus) {
-
-            if (
-                sensor.humidity >= 45 &&
-                sensor.humidity <= 75
-            ) {
-
-                humidityStatus.textContent =
-                    "Moderate";
-
-            }
-
-            else {
-
-                humidityStatus.textContent =
-                    "Attention";
-
-            }
-
-        }
-
-
-        // ========================================
-        // GAS STRESS
-        // ========================================
-
-        const gasElement =
-            document.getElementById(
-                "reportGas"
-            );
-
-
-        if (gasElement) {
-
-            if (sensor.gas_stress <= 30) {
-
-                gasElement.textContent =
-                    "Low";
-
-            }
-
-            else if (sensor.gas_stress <= 60) {
-
-                gasElement.textContent =
-                    "Medium";
-
-            }
-
-            else {
-
-                gasElement.textContent =
-                    "High";
-
-            }
-
-        }
-
-
-        // ========================================
-        // GAS STATUS
-        // ========================================
-
-        const gasStatusElement =
-            document.getElementById(
-                "gasStatus"
-            );
-
-
-        if (gasStatusElement) {
-
-            if (sensor.gas_stress <= 30) {
-
-                gasStatusElement.textContent =
-                    "Normal";
-
-            }
-
-            else {
-
-                gasStatusElement.textContent =
-                    "Warning";
-
-            }
-
-        }
-
-
-        // ========================================
+        // ====================================
         // AI RECOMMENDATION
-        // ========================================
+        // ====================================
 
-        const recommendationElement =
+        const recommendation =
             document.getElementById(
                 "aiRecommendation"
             );
 
 
-        if (recommendationElement) {
+        if (recommendation) {
 
-            recommendationElement.textContent =
+            recommendation.textContent =
                 soil.recommendation;
 
         }
 
 
-        // ========================================
-        // CREDIT POINTS
-        // ========================================
-
-        const creditElement =
-            document.getElementById(
-                "reportCredit"
-            );
-
-
-        if (creditElement) {
-
-            creditElement.textContent =
-                soilData.creditPoints;
-
-        }
-
-
-        // ========================================
-        // REPORT ID
-        // ========================================
-
-        const reportIdElement =
-            document.getElementById(
-                "reportId"
-            );
-
-
-        if (reportIdElement) {
-
-            const now =
-                new Date();
-
-            const year =
-                now.getFullYear();
-
-            const month =
-                String(
-                    now.getMonth() + 1
-                ).padStart(2, "0");
-
-            const day =
-                String(
-                    now.getDate()
-                ).padStart(2, "0");
-
-
-            reportIdElement.textContent =
-                `AGR-${year}-${month}${day}`;
-
-        }
-
-
-        // ========================================
-        // GENERATED TIME
-        // ========================================
-
-        const generatedTime =
-            document.getElementById(
-                "generatedTime"
-            );
-
-
-        if (generatedTime) {
-
-            generatedTime.textContent =
-                new Date().toLocaleString();
-
-        }
-
-
-        // ========================================
-        // DESCRIPTION
-        // ========================================
-
-        const description =
-            document.getElementById(
-                "reportDescription"
-            );
-
-
-        if (description) {
-
-            description.textContent =
-                "This report is generated from the latest monitored soil readings and the Agrimitra AI soil-health analysis engine.";
-
-        }
-
-
         console.log(
-            "Agrimitra report loaded successfully."
+            "Report updated successfully."
         );
 
     }
@@ -445,16 +210,319 @@ async function loadReport() {
         );
 
 
-        const recommendationElement =
+        // ====================================
+        // LOCAL FALLBACK SCORE
+        // ====================================
+
+        const score =
+            calculateReportScore();
+
+
+        const status =
+            getReportStatus(
+                score
+            );
+
+
+        const scoreElement =
+            document.getElementById(
+                "reportScore"
+            );
+
+
+        if (scoreElement) {
+
+            scoreElement.innerHTML =
+                `${score}<small>/100</small>`;
+
+        }
+
+
+        const statusElement =
+            document.getElementById(
+                "reportStatus"
+            );
+
+
+        if (statusElement) {
+
+            statusElement.textContent =
+                status.toUpperCase();
+
+        }
+
+
+        const recommendation =
             document.getElementById(
                 "aiRecommendation"
             );
 
 
-        if (recommendationElement) {
+        if (recommendation) {
 
-            recommendationElement.textContent =
-                "AI service unavailable. Please make sure the Agrimitra backend server is running.";
+            recommendation.textContent =
+                getReportRecommendation(
+                    status
+                );
+
+        }
+
+    }
+
+
+    // ========================================
+    // CREDIT POINTS
+    // ========================================
+
+    const credit =
+        document.getElementById(
+            "reportCredit"
+        );
+
+
+    if (
+        credit &&
+        typeof soilData.creditPoints !==
+        "undefined"
+    ) {
+
+        credit.textContent =
+            soilData.creditPoints;
+
+    }
+
+
+    // ========================================
+    // REPORT ID
+    // ========================================
+
+    const reportId =
+        document.getElementById(
+            "reportId"
+        );
+
+
+    if (reportId) {
+
+        const now =
+            new Date();
+
+
+        const year =
+            now.getFullYear();
+
+
+        const month =
+            String(
+                now.getMonth() + 1
+            ).padStart(2, "0");
+
+
+        const day =
+            String(
+                now.getDate()
+            ).padStart(2, "0");
+
+
+        reportId.textContent =
+            `AGR-${year}-${month}${day}`;
+
+    }
+
+
+    // ========================================
+    // GENERATED TIME
+    // ========================================
+
+    const generatedTime =
+        document.getElementById(
+            "generatedTime"
+        );
+
+
+    if (generatedTime) {
+
+        generatedTime.textContent =
+            new Date().toLocaleString();
+
+    }
+
+}
+
+
+
+// ========================================
+// UPDATE REPORT READINGS
+// ========================================
+
+function updateReportReadings(
+    moisture,
+    temperature,
+    gasStress
+) {
+
+
+    // ========================================
+    // MOISTURE
+    // ========================================
+
+    const moistureElement =
+        document.getElementById(
+            "reportMoisture"
+        );
+
+
+    if (moistureElement) {
+
+        moistureElement.textContent =
+            `${moisture}%`;
+
+    }
+
+
+    const moistureStatus =
+        document.getElementById(
+            "moistureStatus"
+        );
+
+
+    if (moistureStatus) {
+
+        if (moisture < 45) {
+
+            moistureStatus.textContent =
+                "Low";
+
+        }
+
+        else if (
+            moisture <= 70
+        ) {
+
+            moistureStatus.textContent =
+                "Good range";
+
+        }
+
+        else {
+
+            moistureStatus.textContent =
+                "High";
+
+        }
+
+    }
+
+
+
+    // ========================================
+    // TEMPERATURE
+    // ========================================
+
+    const temperatureElement =
+        document.getElementById(
+            "reportTemperature"
+        );
+
+
+    if (temperatureElement) {
+
+        temperatureElement.textContent =
+            `${temperature}°C`;
+
+    }
+
+
+    const temperatureStatus =
+        document.getElementById(
+            "temperatureStatus"
+        );
+
+
+    if (temperatureStatus) {
+
+        if (
+            temperature >= 22 &&
+            temperature <= 32
+        ) {
+
+            temperatureStatus.textContent =
+                "Normal";
+
+        }
+
+        else {
+
+            temperatureStatus.textContent =
+                "Attention";
+
+        }
+
+    }
+
+
+
+    // ========================================
+    // GAS STRESS
+    // ========================================
+
+    const gasElement =
+        document.getElementById(
+            "reportGas"
+        );
+
+
+    if (gasElement) {
+
+        if (
+            gasStress <= 30
+        ) {
+
+            gasElement.textContent =
+                "Low";
+
+        }
+
+        else if (
+            gasStress <= 60
+        ) {
+
+            gasElement.textContent =
+                "Medium";
+
+        }
+
+        else {
+
+            gasElement.textContent =
+                "High";
+
+        }
+
+    }
+
+
+    const gasStatus =
+        document.getElementById(
+            "gasStatus"
+        );
+
+
+    if (gasStatus) {
+
+        if (
+            gasStress <= 30
+        ) {
+
+            gasStatus.textContent =
+                "Normal";
+
+        }
+
+        else {
+
+            gasStatus.textContent =
+                "Warning";
 
         }
 
@@ -463,8 +531,185 @@ async function loadReport() {
 }
 
 
+
 // ========================================
-// LOAD REPORT WHEN PAGE OPENS
+// LOCAL REPORT SCORE
+// ========================================
+
+function calculateReportScore() {
+
+    const moisture =
+        Number(
+            soilData.moisture
+        );
+
+
+    const temperature =
+        Number(
+            soilData.temperature
+        );
+
+
+    const gas =
+        Number(
+            soilData.gasStress
+        );
+
+
+    // ========================================
+    // MOISTURE SCORE - 45
+    // ========================================
+
+    const moistureDifference =
+        Math.abs(
+            moisture - 60
+        );
+
+
+    const moistureScore =
+        Math.max(
+            0,
+            45 -
+            (
+                moistureDifference * 1.5
+            )
+        );
+
+
+    // ========================================
+    // TEMPERATURE SCORE - 30
+    // ========================================
+
+    const temperatureDifference =
+        Math.abs(
+            temperature - 26
+        );
+
+
+    const temperatureScore =
+        Math.max(
+            0,
+            30 -
+            (
+                temperatureDifference * 2.5
+            )
+        );
+
+
+    // ========================================
+    // GAS SCORE - 25
+    // ========================================
+
+    const gasScore =
+        Math.max(
+            0,
+            25 -
+            (
+                gas * 0.30
+            )
+        );
+
+
+    const score =
+        moistureScore +
+        temperatureScore +
+        gasScore;
+
+
+    return Number(
+        Math.max(
+            0,
+            Math.min(
+                100,
+                score
+            )
+        ).toFixed(1)
+    );
+
+}
+
+
+
+// ========================================
+// STATUS
+// ========================================
+
+function getReportStatus(
+    score
+) {
+
+    if (score >= 80) {
+
+        return "Healthy";
+
+    }
+
+
+    if (score >= 60) {
+
+        return "Moderate";
+
+    }
+
+
+    return "Needs Attention";
+
+}
+
+
+
+// ========================================
+// RECOMMENDATION
+// ========================================
+
+function getReportRecommendation(
+    status
+) {
+
+    if (
+        status === "Healthy"
+    ) {
+
+        return (
+            "Soil condition is currently healthy. "
+            +
+            "Maintain the current irrigation pattern "
+            +
+            "and continue regular monitoring."
+        );
+
+    }
+
+
+    if (
+        status === "Moderate"
+    ) {
+
+        return (
+            "Soil condition is moderate. "
+            +
+            "Monitor moisture, temperature "
+            +
+            "and gas stress regularly."
+        );
+
+    }
+
+
+    return (
+        "Soil condition needs attention. "
+        +
+        "Check moisture, temperature "
+        +
+        "and gas stress before taking corrective action."
+    );
+
+}
+
+
+
+// ========================================
+// PAGE LOAD
 // ========================================
 
 document.addEventListener(
