@@ -1,21 +1,431 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Agrimitra • Smart Soil Dashboard</title>
 
-    <meta http-equiv="refresh" content="0; url=frontend/index.html">
+<!-- MQTT over WebSockets + charts + Excel export -->
+<script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
 
-    <title>Agrimitra</title>
+<style>
+:root{
+  --green:#147a4b;
+  --green2:#1f9d63;
+  --dark:#0c1f18;
+  --muted:#66756e;
+  --bg:#f5f8f5;
+  --card:#ffffff;
+  --line:#e1e9e4;
+  --warn:#c88b19;
+  --danger:#d94b4b;
+  --shadow:0 12px 32px rgba(24,65,45,.08);
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;font-family:Inter,ui-sans-serif,system-ui,-apple-system,Segoe UI,Arial,sans-serif;background:var(--bg);color:var(--dark)}
+button,input{font:inherit}
+button{cursor:pointer}
+.nav{
+  height:66px;background:rgba(255,255,255,.94);backdrop-filter:blur(12px);
+  border-bottom:1px solid var(--line);display:flex;align-items:center;
+  justify-content:space-between;padding:0 clamp(18px,5vw,76px);position:sticky;top:0;z-index:20
+}
+.brand{font-weight:800;color:var(--green);display:flex;align-items:center;gap:8px}
+.brand-mark{font-size:21px}
+.navlinks{display:flex;gap:24px;align-items:center;font-size:13px;color:#53625b}
+.navlinks a{text-decoration:none;color:inherit}
+.btn{
+  border:0;border-radius:9px;padding:11px 16px;background:var(--green);color:#fff;font-weight:700;
+  box-shadow:0 6px 15px rgba(20,122,75,.18)
+}
+.btn.secondary{background:#eaf5ef;color:var(--green);box-shadow:none}
+.btn.ghost{background:#fff;color:var(--green);border:1px solid #cfe1d7;box-shadow:none}
+.container{width:min(1180px,calc(100% - 32px));margin:auto}
+.hero{padding:54px 0 28px}
+.hero-grid{display:grid;grid-template-columns:1.05fr .95fr;gap:44px;align-items:center}
+.eyebrow{font-size:11px;letter-spacing:1.7px;color:var(--green);font-weight:900;text-transform:uppercase}
+.hero h1{font-size:clamp(44px,6vw,74px);line-height:.98;margin:14px 0 20px;letter-spacing:-3px}
+.hero h1 span{color:var(--green)}
+.hero p{max-width:600px;color:#596861;line-height:1.7;font-size:15px}
+.actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:22px}
+.stats-mini{display:flex;gap:38px;margin-top:28px;flex-wrap:wrap}
+.stats-mini strong{font-size:20px}
+.stats-mini small{display:block;color:#7b8781;font-size:10px;margin-top:3px}
+.score-card{
+  background:#fff;border:1px solid var(--line);border-radius:24px;padding:24px;box-shadow:var(--shadow);
+}
+.score-head{display:flex;justify-content:space-between;font-size:11px;text-transform:uppercase;font-weight:800;color:#708079}
+.live{color:var(--green)}
+.ring-wrap{width:220px;height:220px;margin:18px auto;position:relative}
+.ring{width:100%;height:100%;border-radius:50%;display:grid;place-items:center;
+  background:conic-gradient(var(--green) var(--scoredeg,70%), #e5eee9 0)}
+.ring:before{content:"";position:absolute;width:174px;height:174px;border-radius:50%;background:#fff}
+.ring-content{position:relative;text-align:center}
+.score-num{font-size:52px;font-weight:900;line-height:1}
+.score-num small{font-size:13px;color:#738078;font-weight:700}
+.health{font-size:12px;color:var(--green);font-weight:800;text-align:center}
+.metric-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:18px}
+.metric{background:#f7faf8;border:1px solid #edf2ef;border-radius:12px;padding:12px}
+.metric label{font-size:10px;color:#75817b;display:block;margin-bottom:5px}
+.metric strong{font-size:16px}
+.section{padding:30px 0}
+.section-title{display:flex;justify-content:space-between;gap:20px;align-items:end;margin-bottom:15px}
+.section-title h2{margin:0;font-size:25px}
+.section-title p{margin:4px 0 0;color:var(--muted);font-size:13px}
+.dashboard-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:20px;box-shadow:0 5px 18px rgba(24,65,45,.045)}
+.big{font-size:38px;font-weight:900;margin:8px 0}
+.sub{color:var(--muted);font-size:12px}
+.badge{display:inline-flex;padding:6px 9px;border-radius:99px;font-size:11px;font-weight:800;margin-top:9px}
+.good{background:#e5f6ec;color:#137247}.warn{background:#fff4d8;color:#9a6b11}.bad{background:#fde9e9;color:#b73535}
+.progress{height:8px;background:#e8efeb;border-radius:99px;overflow:hidden;margin:14px 0 6px}
+.progress i{height:100%;display:block;background:var(--green);width:0;transition:width .5s}
+.chart-card{padding:18px;height:360px}
+.chart-card canvas{width:100%!important;height:280px!important}
+.alert{display:flex;gap:12px;align-items:center;border-radius:14px;padding:14px 16px;margin-bottom:10px;background:#fff;border:1px solid var(--line)}
+.alert-dot{width:10px;height:10px;border-radius:50%;background:var(--green);flex:none}
+.alert.danger{background:#fff4f4;border-color:#f1d1d1}.alert.danger .alert-dot{background:var(--danger)}
+.alert.warn{background:#fffaf0;border-color:#f0dfb8}.alert.warn .alert-dot{background:var(--warn)}
+.table-wrap{overflow:auto;background:#fff;border:1px solid var(--line);border-radius:16px}
+table{width:100%;border-collapse:collapse;min-width:720px}
+th,td{text-align:left;padding:12px 14px;border-bottom:1px solid #edf1ef;font-size:12px}
+th{background:#f8faf9;color:#637169;font-size:11px;text-transform:uppercase;letter-spacing:.4px}
+tr:last-child td{border-bottom:0}
+.toolbar{display:flex;gap:8px;flex-wrap:wrap}
+.report-box{display:grid;grid-template-columns:1fr auto;gap:20px;align-items:center}
+.report-box p{color:var(--muted);font-size:13px;line-height:1.6}
+.form-card{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.form-card label{font-size:11px;color:var(--muted);font-weight:700}
+.form-card input{width:100%;margin-top:6px;border:1px solid #d7e1dc;border-radius:9px;padding:10px;background:#fff}
+footer{padding:38px 0;color:#7b8781;font-size:12px;text-align:center}
+.toast{position:fixed;right:18px;bottom:18px;background:#10251d;color:#fff;padding:12px 15px;border-radius:10px;opacity:0;transform:translateY(10px);transition:.25s;z-index:50;font-size:13px}
+.toast.show{opacity:1;transform:none}
+@media(max-width:850px){
+  .hero-grid{grid-template-columns:1fr}.navlinks a{display:none}
+  .dashboard-grid{grid-template-columns:1fr 1fr}.metric-grid{grid-template-columns:1fr 1fr 1fr}
+}
+@media(max-width:580px){
+  .hero{padding-top:34px}.hero h1{letter-spacing:-2px}
+  .dashboard-grid{grid-template-columns:1fr}.metric-grid{grid-template-columns:1fr 1fr}
+  .form-card{grid-template-columns:1fr}.report-box{grid-template-columns:1fr}
+  .nav{padding:0 15px}.container{width:min(100% - 24px,1180px)}
+}
+</style>
 </head>
 
 <body>
-    <p>
-        Opening Agrimitra...
-    </p>
+<nav class="nav">
+  <div class="brand"><span class="brand-mark">🌱</span> Agrimitra</div>
+  <div class="navlinks">
+    <a href="#overview">Overview</a><a href="#analytics">Analytics</a><a href="#history">History</a>
+    <button class="btn" onclick="connectMQTT()">Connect Dashboard</button>
+  </div>
+</nav>
 
-    <script>
-        window.location.href = "frontend/index.html";
-    </script>
+<main>
+<section class="hero" id="overview">
+<div class="container hero-grid">
+  <div>
+    <div class="eyebrow">Build for Bharat • Smart Agriculture</div>
+    <h1>Know Your Soil.<br><span>Grow Smarter.</span><br>Earn More.</h1>
+    <p>Live IoT soil monitoring from your NodeMCU and EMQX broker. Track moisture, soil temperature and gas status, calculate a transparent Soil Credit Score, and export your readings for reports.</p>
+    <div class="actions">
+      <button class="btn" onclick="document.getElementById('analytics').scrollIntoView()">View Soil Dashboard →</button>
+      <button class="btn secondary" onclick="downloadExcel()">Download Excel Report</button>
+    </div>
+    <div class="stats-mini">
+      <div><strong>0–100</strong><small>SOIL CREDIT SCORE</small></div>
+      <div><strong id="readingCount">0</strong><small>LIVE READINGS</small></div>
+      <div><strong>3</strong><small>KEY SENSORS</small></div>
+    </div>
+  </div>
+
+  <div class="score-card">
+    <div class="score-head"><span>Live Soil Status</span><span class="live" id="liveText">● OFFLINE</span></div>
+    <div class="ring-wrap">
+      <div class="ring" id="scoreRing">
+        <div class="ring-content"><div class="score-num" id="score">--<small>/100</small></div></div>
+      </div>
+    </div>
+    <div class="health" id="healthText">Waiting for live sensor data</div>
+    <div class="metric-grid">
+      <div class="metric"><label>💧 Moisture</label><strong id="heroMoisture">--%</strong></div>
+      <div class="metric"><label>🌡 Temperature</label><strong id="heroTemp">--°C</strong></div>
+      <div class="metric"><label>💨 Gas Stress</label><strong id="heroGas">--</strong></div>
+    </div>
+  </div>
+</div>
+</section>
+
+<section class="section" id="analytics">
+<div class="container">
+  <div class="section-title">
+    <div><div class="eyebrow">Live monitoring</div><h2>Soil Health Console</h2><p>Values update instantly whenever an MQTT message arrives.</p></div>
+    <div class="toolbar">
+      <button class="btn ghost" onclick="clearHistory()">Clear History</button>
+      <button class="btn secondary" onclick="downloadExcel()">Export Excel</button>
+    </div>
+  </div>
+
+  <div class="dashboard-grid">
+    <div class="card">
+      <div class="sub">🌱 Soil Moisture</div>
+      <div class="big" id="moisture">--%</div>
+      <div class="progress"><i id="moistureBar"></i></div>
+      <span class="badge" id="moistureStatus">Waiting</span>
+    </div>
+    <div class="card">
+      <div class="sub">🌡 Soil Temperature</div>
+      <div class="big" id="temperature">--°C</div>
+      <span class="badge" id="tempStatus">Waiting</span>
+      <p class="sub" id="tempAdvice">Waiting for DS18B20 data.</p>
+    </div>
+    <div class="card">
+      <div class="sub">💨 Soil Gas Status</div>
+      <div class="big" id="gas">--</div>
+      <span class="badge" id="gasStatus">Waiting</span>
+      <p class="sub">MQ-2 digital threshold status.</p>
+    </div>
+  </div>
+
+  <div class="dashboard-grid" style="margin-top:16px">
+    <div class="card">
+      <div class="sub">🏆 Soil Credit Points</div>
+      <div class="big" id="credit">--</div>
+      <span class="badge good" id="creditLevel">Live score</span>
+      <p class="sub">A project score based on moisture, temperature and gas condition.</p>
+    </div>
+    <div class="card">
+      <div class="sub">💧 Moisture contribution</div>
+      <div class="big" id="moisturePoints">--/35</div>
+      <p class="sub">Healthy target band: 30–70%.</p>
+    </div>
+    <div class="card">
+      <div class="sub">🌡 Temperature contribution</div>
+      <div class="big" id="tempPoints">--/35</div>
+      <p class="sub">Reference comfort band: 18–32°C.</p>
+    </div>
+  </div>
+
+  <div class="dashboard-grid" style="margin-top:16px">
+    <div class="card chart-card"><div class="sub">Moisture trend</div><canvas id="moistureChart"></canvas></div>
+    <div class="card chart-card"><div class="sub">Temperature trend</div><canvas id="tempChart"></canvas></div>
+    <div class="card chart-card"><div class="sub">Soil credit trend</div><canvas id="scoreChart"></canvas></div>
+  </div>
+</div>
+</section>
+
+<section class="section">
+<div class="container">
+  <div class="section-title"><div><div class="eyebrow">Action center</div><h2>Smart recommendations</h2></div></div>
+  <div id="alerts">
+    <div class="alert"><span class="alert-dot"></span><div><strong>Waiting for data</strong><div class="sub">Connect to EMQX to generate live recommendations.</div></div></div>
+  </div>
+</div>
+</section>
+
+<section class="section" id="history">
+<div class="container">
+  <div class="section-title">
+    <div><div class="eyebrow">Report center</div><h2>Reading history</h2><p>Download the complete browser session as an Excel workbook.</p></div>
+  </div>
+  <div class="card" style="margin-bottom:14px">
+    <div class="form-card">
+      <div><label>Farm / Project Name</label><input id="farmName" value="Agrimitra Soil Monitoring"></div>
+      <div><label>Field / Plot</label><input id="plotName" value="Demo Plot"></div>
+      <div><label>Farmer / Operator</label><input id="operatorName" value="Operator"></div>
+    </div>
+  </div>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Time</th><th>Moisture</th><th>Temperature</th><th>Gas</th><th>Soil Credit</th><th>Status</th></tr></thead>
+      <tbody id="historyBody"><tr><td colspan="6" style="text-align:center;color:#78847e">No readings yet.</td></tr></tbody>
+    </table>
+  </div>
+</div>
+</section>
+
+<section class="section">
+<div class="container card report-box">
+  <div><div class="eyebrow">MQTT connection</div><h2 style="margin:6px 0">Connect your live sensor feed</h2>
+  <p>Broker: <strong>f6f2cd1e.ala.us-east-1.emqxsl.com</strong><br>
+  Browser connection uses secure WebSockets. Enter your EMQX credentials locally; they are not saved by this dashboard.</p></div>
+  <div style="min-width:min(330px,100%)">
+    <input id="mqttUser" placeholder="EMQX username" style="width:100%;padding:11px;border:1px solid #d7e1dc;border-radius:9px;margin-bottom:8px">
+    <input id="mqttPass" type="password" placeholder="EMQX password" style="width:100%;padding:11px;border:1px solid #d7e1dc;border-radius:9px;margin-bottom:8px">
+    <button class="btn" style="width:100%" onclick="connectMQTT()">Connect Live MQTT</button>
+  </div>
+</div>
+</section>
+</main>
+
+<footer>Agrimitra • Smart Soil Monitoring • Live MQTT • Soil Credit Score</footer>
+<div class="toast" id="toast"></div>
+
+<script>
+const MQTT_HOST="f6f2cd1e.ala.us-east-1.emqxsl.com";
+const MQTT_WS_PORT=8084;     // Change if your EMQX deployment shows a different WSS port
+const MQTT_PATH="/mqtt";
+const TOPICS={moisture:"soil/moisture",temperature:"soil/temperature",gas:"soil/gas"};
+
+let client=null;
+let current={moisture:null,temperature:null,gas:null};
+let history=[];
+const maxChart=30;
+
+function toast(msg){
+  const t=document.getElementById("toast");t.textContent=msg;t.classList.add("show");
+  setTimeout(()=>t.classList.remove("show"),2600);
+}
+function setBadge(id,text,cls=""){const e=document.getElementById(id);e.textContent=text;e.className="badge "+cls}
+function scoreTemperature(t){
+  if(!Number.isFinite(t))return 0;
+  if(t>=18&&t<=32)return 35;
+  if(t>=14&&t<18)return 27;
+  if(t>32&&t<=36)return 27;
+  if(t>=10&&t<14)return 17;
+  if(t>36&&t<=40)return 17;
+  return 8;
+}
+function scoreMoisture(m){
+  if(!Number.isFinite(m))return 0;
+  if(m>=40&&m<=70)return 35;
+  if(m>=30&&m<40)return 29;
+  if(m>70&&m<=80)return 29;
+  if(m>=20&&m<30)return 20;
+  if(m>80&&m<=90)return 20;
+  return 10;
+}
+function calculateScore(){
+  const m=scoreMoisture(current.moisture);
+  const t=scoreTemperature(current.temperature);
+  const g=(current.gas==="NO GAS")?30:0;
+  return {score:Math.max(0,Math.min(100,Math.round(m+t+g))),m,t,g};
+}
+function scoreLabel(s){
+  if(s>=85)return ["Excellent soil condition","good"];
+  if(s>=70)return ["Healthy soil condition","good"];
+  if(s>=50)return ["Needs attention","warn"];
+  return ["Poor soil condition","bad"];
+}
+function updateUI(){
+  const m=current.moisture,t=current.temperature,g=current.gas;
+  if(Number.isFinite(m)){
+    document.getElementById("moisture").textContent=m.toFixed(0)+"%";
+    document.getElementById("heroMoisture").textContent=m.toFixed(0)+"%";
+    document.getElementById("moistureBar").style.width=Math.max(0,Math.min(100,m))+"%";
+    if(m<30)setBadge("moistureStatus","DRY • Water needed","bad");
+    else if(m<70)setBadge("moistureStatus","NORMAL","warn");
+    else setBadge("moistureStatus","WET","good");
+  }
+  if(Number.isFinite(t)){
+    document.getElementById("temperature").textContent=t.toFixed(2)+"°C";
+    document.getElementById("heroTemp").textContent=t.toFixed(1)+"°C";
+    let label=t<18?"Cool":t<=32?"Healthy range":"Warm";
+    setBadge("tempStatus",label,label==="Healthy range"?"good":"warn");
+    document.getElementById("tempAdvice").textContent =
+      t<18?"Temperature is below the project reference band.":
+      t<=32?"Temperature is inside the project reference band.":
+      "Temperature is above the project reference band.";
+  }
+  if(g){
+    document.getElementById("gas").textContent=g==="GAS DETECTED"?"DETECTED":"NO GAS";
+    document.getElementById("heroGas").textContent=g==="GAS DETECTED"?"High":"Low";
+    setBadge("gasStatus",g==="GAS DETECTED"?"⚠ GAS DETECTED":"✓ NO GAS",g==="GAS DETECTED"?"bad":"good");
+  }
+  const s=calculateScore();
+  if(Number.isFinite(m)||Number.isFinite(t)||g){
+    document.getElementById("score").innerHTML=s.score+'<small>/100</small>';
+    document.getElementById("scoreRing").style.setProperty("--scoredeg",(s.score*3.6)+"deg");
+    const [lab,cl]=scoreLabel(s.score);document.getElementById("healthText").textContent="• "+lab;
+    document.getElementById("healthText").style.color=cl==="bad"?"#b73535":cl==="warn"?"#9a6b11":"#137247";
+    document.getElementById("credit").textContent=s.score+" pts";
+    document.getElementById("moisturePoints").textContent=s.m+"/35";
+    document.getElementById("tempPoints").textContent=s.t+"/35";
+    setBadge("creditLevel",lab,cl);
+    buildAlerts(s);
+  }
+}
+function buildAlerts(s){
+  const a=[];
+  if(current.gas==="GAS DETECTED")a.push(["danger","Gas threshold detected","Inspect the soil/environment and verify the MQ-2 reading."]);
+  if(Number.isFinite(current.moisture)&&current.moisture<30)a.push(["danger","Soil is dry","Irrigation may be required."]);
+  else if(Number.isFinite(current.moisture)&&current.moisture>85)a.push(["warn","Soil is very wet","Check drainage and avoid unnecessary watering."]);
+  if(Number.isFinite(current.temperature)&&current.temperature>32)a.push(["warn","Soil temperature is high","Monitor moisture and plant stress."]);
+  if(!a.length)a.push(["","Soil conditions look stable","No immediate action is indicated by the current project thresholds."]);
+  document.getElementById("alerts").innerHTML=a.map(x=>`<div class="alert ${x[0]}"><span class="alert-dot"></span><div><strong>${x[1]}</strong><div class="sub">${x[2]}</div></div></div>`).join("");
+}
+function addReading(){
+  if(!Number.isFinite(current.moisture)&&!Number.isFinite(current.temperature)&&!current.gas)return;
+  const s=calculateScore(),now=new Date();
+  history.unshift({
+    time:now.toLocaleString(),timestamp:now.toISOString(),
+    moisture:Number.isFinite(current.moisture)?current.moisture:null,
+    temperature:Number.isFinite(current.temperature)?current.temperature:null,
+    gas:current.gas||"",
+    score:s.score,
+    status:scoreLabel(s.score)[0]
+  });
+  if(history.length>500)history.pop();
+  document.getElementById("readingCount").textContent=history.length;
+  renderTable();updateCharts();
+}
+function renderTable(){
+  const body=document.getElementById("historyBody");
+  if(!history.length){body.innerHTML='<tr><td colspan="6" style="text-align:center;color:#78847e">No readings yet.</td></tr>';return}
+  body.innerHTML=history.slice(0,50).map(r=>`<tr><td>${r.time}</td><td>${r.moisture??"--"}%</td><td>${r.temperature??"--"}°C</td><td>${r.gas}</td><td><strong>${r.score}</strong></td><td>${r.status}</td></tr>`).join("");
+}
+const chartOpts={responsive:true,maintainAspectRatio:false,animation:false,plugins:{legend:{display:false}},scales:{x:{display:false},y:{beginAtZero:true}}};
+let cm,ct,cs;
+function makeCharts(){
+  cm=new Chart(document.getElementById("moistureChart"),{type:"line",data:{labels:[],datasets:[{data:[],borderColor:"#147a4b",backgroundColor:"rgba(20,122,75,.08)",fill:true,tension:.35,pointRadius:2}]},options:{...chartOpts,scales:{x:{display:false},y:{min:0,max:100}}}});
+  ct=new Chart(document.getElementById("tempChart"),{type:"line",data:{labels:[],datasets:[{data:[],borderColor:"#c88b19",backgroundColor:"rgba(200,139,25,.08)",fill:true,tension:.35,pointRadius:2}]},options:{...chartOpts}});
+  cs=new Chart(document.getElementById("scoreChart"),{type:"line",data:{labels:[],datasets:[{data:[],borderColor:"#1f9d63",backgroundColor:"rgba(31,157,99,.08)",fill:true,tension:.35,pointRadius:2}]},options:{...chartOpts,scales:{x:{display:false},y:{min:0,max:100}}}});
+}
+function updateCharts(){
+  const rows=history.slice(0,maxChart).reverse();
+  const labels=rows.map((r,i)=>i+1);
+  cm.data.labels=labels;cm.data.datasets[0].data=rows.map(r=>r.moisture);cm.update("none");
+  ct.data.labels=labels;ct.data.datasets[0].data=rows.map(r=>r.temperature);ct.update("none");
+  cs.data.labels=labels;cs.data.datasets[0].data=rows.map(r=>r.score);cs.update("none");
+}
+function connectMQTT(){
+  const u=document.getElementById("mqttUser").value.trim(),p=document.getElementById("mqttPass").value;
+  if(!u||!p){toast("Enter your EMQX username and password.");return}
+  if(client)try{client.end(true)}catch(e){}
+  const url=`wss://${MQTT_HOST}:${MQTT_WS_PORT}${MQTT_PATH}`;
+  client=mqtt.connect(url,{username:u,password:p,clientId:"agrimitra-"+Math.random().toString(16).slice(2),clean:true,reconnectPeriod:3000,connectTimeout:10000});
+  document.getElementById("liveText").textContent="● CONNECTING";
+  client.on("connect",()=>{document.getElementById("liveText").textContent="● LIVE";client.subscribe("soil/#");toast("Live MQTT connected.");});
+  client.on("reconnect",()=>document.getElementById("liveText").textContent="● RECONNECTING");
+  client.on("close",()=>document.getElementById("liveText").textContent="● OFFLINE");
+  client.on("error",e=>{console.error(e);toast("MQTT error. Check WebSocket settings and credentials.");});
+  client.on("message",(topic,payload)=>{
+    const v=payload.toString().trim();
+    if(topic===TOPICS.moisture){const n=Number(v);if(Number.isFinite(n))current.moisture=n}
+    if(topic===TOPICS.temperature){const n=Number(v);if(Number.isFinite(n))current.temperature=n}
+    if(topic===TOPICS.gas)current.gas=v.toUpperCase();
+    updateUI();addReading();
+  });
+}
+function clearHistory(){
+  if(confirm("Clear all readings from this browser session?")){history=[];document.getElementById("readingCount").textContent=0;renderTable();updateCharts();toast("History cleared.");}
+}
+function downloadExcel(){
+  if(!window.XLSX){toast("Excel library is still loading.");return}
+  const farm=document.getElementById("farmName").value,plot=document.getElementById("plotName").value,op=document.getElementById("operatorName").value;
+  const rows=history.map(r=>({DateTime:r.time,Farm:farm,Plot:plot,Operator:op,Moisture_Percent:r.moisture,Temperature_C:r.temperature,Gas_Status:r.gas,Soil_Credit_Points:r.score,Soil_Status:r.status}));
+  const summary=[{Field:"Farm / Project",Value:farm},{Field:"Plot",Value:plot},{Field:"Operator",Value:op},{Field:"Generated",Value:new Date().toLocaleString()},{Field:"Readings",Value:history.length},{Field:"Current Moisture %",Value:current.moisture},{Field:"Current Temperature °C",Value:current.temperature},{Field:"Current Gas",Value:current.gas},{Field:"Current Soil Credit",Value:calculateScore().score}];
+  const wb=XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb,XLSX.utils.json_to_sheet(summary),"Summary");
+  XLSX.utils.book_append_sheet(wb,XLSX.utils.json_to_sheet(rows),"Readings");
+  XLSX.writeFile(wb,"Agrimitra_Soil_Report_"+new Date().toISOString().slice(0,10)+".xlsx");
+  toast("Excel report downloaded.");
+}
+makeCharts();renderTable();
+</script>
 </body>
 </html>
